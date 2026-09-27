@@ -1,0 +1,71 @@
+# ==========================================
+# macOS
+# ==========================================
+.DS_Store
+
+# ==========================================
+# IDE / Editor
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ==========================================
+# Environment / Secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Never commit local kubeconfig files
+kubeconfig
+kubeconfig-*
+.kube/
+
+# ==========================================
+# Terraform
+# ==========================================
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+terraform.tfplan
+*.tfplan
+
+crash.log
+crash.*.log
+
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# .terraform.lock.hcl SHOULD be committed
+
+# ==========================================
+# Ansible
+# ==========================================
+*.retry
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ==========================================
+# Logs / Temporary files
+# ==========================================
+*.log
+tmp/
+temp/
