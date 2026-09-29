@@ -5,14 +5,27 @@ module "eks" {
   name               = var.cluster_name
   kubernetes_version = var.kubernetes_version
 
-  # Required so kubectl and Ansible can communicate with
-  # the Kubernetes API from the local control machine.
-  endpoint_public_access  = true
-  endpoint_private_access = true
+  # kubectl and Ansible connect from the local control machine.
+  endpoint_public_access       = true
+  endpoint_private_access      = true
+  endpoint_public_access_cidrs = var.cluster_public_access_cidrs
 
-  # Give the identity creating the cluster administrator
-  # access through the EKS access-entry mechanism.
+  # Give the identity creating the cluster administrator access
+  # through the EKS access-entry mechanism.
   enable_cluster_creator_admin_permissions = true
+
+  # Keep the capstone focused and cost-aware.
+  # EKS already encrypts Kubernetes secrets at rest using AWS-managed
+  # encryption when no custom KMS encryption configuration is supplied.
+  encryption_config = null
+  create_kms_key    = false
+
+  # Control-plane logging is not required by this capstone.
+  enabled_log_types           = []
+  create_cloudwatch_log_group = false
+
+  # IRSA is not required by the application deployed in this capstone.
+  enable_irsa = false
 
   addons = {
     coredns = {}
@@ -32,7 +45,9 @@ module "eks" {
 
   eks_managed_node_groups = {
     application = {
-      name = "${var.cluster_name}-nodes"
+      # Keep resource names short enough for generated AWS IAM
+      # role and launch-template name prefixes.
+      name = "app-nodes"
 
       ami_type       = "AL2023_x86_64_STANDARD"
       instance_types = var.node_instance_types

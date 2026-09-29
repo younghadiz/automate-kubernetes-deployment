@@ -39,3 +39,8 @@ variable "node_instance_types" {
   type        = list(string)
   default     = ["t3.small"]
 }
+
+variable "cluster_public_access_cidrs" {
+  description = "CIDR blocks allowed to access the public EKS Kubernetes API endpoint"
+  type        = list(string)
+}
