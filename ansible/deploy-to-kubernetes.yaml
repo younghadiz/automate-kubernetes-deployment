@@ -1,0 +1,23 @@
+---
+- name: Deploy application to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    app_namespace: my-app
+
+  tasks:
+    - name: Create application namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ app_namespace }}"
+        state: present
+
+    - name: Deploy Nginx application
+      kubernetes.core.k8s:
+        state: present
+        namespace: "{{ app_namespace }}"
+        src: "{{ playbook_dir }}/manifests/nginx-app.yaml"
