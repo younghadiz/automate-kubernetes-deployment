@@ -4,7 +4,7 @@
 
 This runbook is the complete, standalone implementation guide for the **Automate Kubernetes Deployment** capstone project.
 
-It is written so the project can be recreated from a fresh local environment. 
+It is written so the project can be recreated from a fresh local environment.
 
 The project provisions Amazon EKS with Terraform, configures local Kubernetes access, then uses Ansible to create a new Kubernetes namespace and deploy an Nginx application.
 
