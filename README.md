@@ -1,168 +1,219 @@
 # Automate Kubernetes Deployment
 
-Capstone Project 2 from the TechWorld with Nana DevOps Bootcamp.
+A hands-on DevOps capstone that provisions an Amazon EKS cluster with Terraform and deploys an application into a dedicated Kubernetes namespace with Ansible.
 
-This project demonstrates how Terraform and Ansible can be combined to provision an Amazon EKS Kubernetes environment and automate application deployment into a dedicated Kubernetes namespace.
+## Project Requirements
 
-## Project Objective
-
-The capstone requires:
+The assignment requires:
 
 1. Create an Amazon EKS cluster using Terraform.
 2. Write an Ansible playbook that deploys an application into a new Kubernetes namespace.
 3. Configure Kubernetes access so Ansible can communicate with the EKS cluster.
 
-## Technologies
+## What This Project Implements
 
-- AWS
-- Amazon EKS
-- Terraform
-- Ansible
-- Kubernetes
-- Python
-- Linux / Unix shell
-- AWS CLI
-- kubectl
-- Git
+- AWS VPC with two public subnets across two Availability Zones
+- Amazon EKS 1.36 cluster
+- One EKS managed node group using a `t3.small` worker
+- EKS access entry granting the cluster-creating IAM identity administrator access
+- CoreDNS, kube-proxy, and VPC CNI EKS addons
+- Restricted public Kubernetes API access using the operator's current `/32` public IP
+- Ansible deployment from the local control machine through kubeconfig
+- Dedicated `my-app` Kubernetes namespace
+- Nginx Deployment with two replicas
+- Internal `ClusterIP` Service
+- Idempotent Ansible execution
+- Complete Terraform cleanup after verification
 
-## Planned Architecture
+## Architecture
 
 ```text
-Local Development Machine
-        |
-        | Terraform
-        v
-AWS Infrastructure
-        |
-        +-- VPC / Networking
-        |
-        +-- Amazon EKS Cluster
-        |
-        +-- EKS Managed Node Group
-                 |
-                 v
-         Kubernetes Worker Nodes
-
-Local Development Machine
-        |
-        | AWS CLI
-        | aws eks update-kubeconfig
-        v
-Kubernetes API
-        ^
-        |
-        | Ansible
-        |
-        +-- Create Kubernetes namespace
-        +-- Create application Deployment
-        +-- Create Kubernetes Service
+Local macOS Control Machine
+│
+├── Terraform
+│   │
+│   └── AWS
+│       ├── VPC 10.0.0.0/16
+│       ├── Public Subnet 10.0.1.0/24
+│       ├── Public Subnet 10.0.2.0/24
+│       ├── Internet Gateway / public route
+│       └── Amazon EKS 1.36
+│           ├── Managed node group
+│           │   └── 1 x t3.small worker
+│           ├── CoreDNS
+│           ├── kube-proxy
+│           └── VPC CNI
+│
+├── AWS CLI
+│   └── aws eks update-kubeconfig
+│
+├── kubectl
+│   └── Kubernetes API verification
+│
+└── Ansible
+    └── kubernetes.core.k8s
+        ├── Namespace: my-app
+        ├── Deployment: nginx (2 replicas)
+        └── Service: nginx-service (ClusterIP)
 ```
-
-## Application
-
-A lightweight Nginx workload will be used to demonstrate the Kubernetes deployment workflow.
-
-The application itself is not the primary focus of this capstone. The focus is infrastructure provisioning and deployment automation using Terraform, EKS, Kubernetes, and Ansible.
 
 ## Repository Structure
 
 ```text
 .
 ├── ansible/
+│   ├── deploy-to-kubernetes.yaml
+│   ├── requirements.yml
 │   └── manifests/
+│       └── nginx-app.yaml
 ├── terraform/
+│   ├── .terraform.lock.hcl
+│   ├── eks.tf
+│   ├── locals.tf
+│   ├── outputs.tf
+│   ├── providers.tf
+│   ├── terraform.tfvars.example
+│   ├── variables.tf
+│   ├── versions.tf
+│   └── vpc.tf
 ├── .gitignore
 ├── README.md
 └── RUNBOOK.md
 ```
 
-The structure will evolve as the project is implemented.
+## Verified Environment
 
-## Implementation Workflow
+The completed implementation was verified with:
 
-The project follows a cost-aware implementation process:
+| Tool | Verified Version |
+|---|---:|
+| macOS | 26.2 arm64 |
+| Git | 2.52.0 |
+| Terraform | 1.15.6 |
+| AWS CLI | 2.34.36 |
+| kubectl | 1.37.0 |
+| Ansible Core | 2.21.3 |
+| Ansible package | 14.3.1 |
+| `kubernetes.core` | 6.5.0 |
+| Ansible Python | 3.14.7 |
+| Kubernetes Python client | 36.0.3 |
+| PyYAML | 6.0.3 |
+| jsonpatch | 1.33 |
 
-```text
-Requirements
-    ↓
-Repository Setup
-    ↓
-Local Tooling Validation
-    ↓
-Terraform Preparation
-    ↓
-Ansible / Kubernetes Preparation
-    ↓
-Local Validation
-    ↓
-AWS Security Preparation
-    ↓
-Provision EKS
-    ↓
-Configure Kubernetes Access
-    ↓
-Deploy with Ansible
-    ↓
-Verify
-    ↓
-Document
-    ↓
-Destroy Cloud Resources
-```
+## Cost-Aware Design
 
-AWS infrastructure will be provisioned only after everything that can reasonably be prepared and validated locally has been completed.
+The project deliberately avoids unnecessary chargeable services.
 
-## Project Status
+It uses:
 
-| Phase                            | Status      |
-| -------------------------------- | ----------- |
-| Requirements                     | Complete    |
-| Repository Setup                 | In Progress |
-| Local Tooling / Environment      | Not Started |
-| Terraform EKS Preparation        | Not Started |
-| Ansible / Kubernetes Preparation | Not Started |
-| Local Validation                 | Not Started |
-| AWS / Security Preparation       | Not Started |
-| EKS Provisioning                 | Not Started |
-| Kubernetes Access                | Not Started |
-| Ansible Deployment               | Not Started |
-| End-to-End Verification          | Not Started |
-| Documentation / Evidence         | Not Started |
-| GitHub Submission                | Not Started |
-| Cleanup                          | Not Started |
+- one EKS control plane
+- one `t3.small` managed worker node
+- public worker networking for this short-lived lab
+- an internal `ClusterIP` service
 
-## Training Reference
+It intentionally does **not** create:
 
-This project is based on concepts taught in:
+- NAT Gateway
+- AWS Load Balancer
+- RDS
+- ECR
+- custom KMS key
+- CloudWatch EKS control-plane log group
+- IRSA/OIDC provider
+- Jenkins or other CI/CD infrastructure
 
-**TechWorld with Nana — DevOps Bootcamp — Module 15: Configuration Management with Ansible**
-
-Relevant training topics include:
-
-- Ansible playbooks
-- Ansible modules and collections
-- Ansible variables
-- Terraform and Ansible
-- Deploying applications to Kubernetes with Ansible
-
-The infrastructure, automation configuration, troubleshooting, implementation decisions, and documentation in this repository are being implemented independently as part of the capstone exercise.
-
-## Cost Awareness
-
-Amazon EKS and associated AWS resources may generate charges.
-
-The project therefore follows this principle:
+The project follows this lifecycle:
 
 ```text
-Prepare locally
+prepare locally
 → validate locally
+→ plan
 → provision
-→ deploy
+→ configure kubeconfig
+→ deploy with Ansible
 → verify
-→ capture evidence
-→ destroy infrastructure
+→ destroy
+→ verify cleanup
 ```
 
-## Author
+## Security Decisions
 
-Gafari Oladele Salaudeen
+- EKS public API access is restricted to the operator's current public IPv4 address using `/32` CIDR rather than `0.0.0.0/0`.
+- Terraform state, real `.tfvars`, kubeconfig files, private keys, and environment secrets are ignored by Git.
+- EC2 Instance Metadata Service v2 is required by the managed-node launch template.
+- No AWS credentials are stored in the repository.
+- The cluster creator is granted EKS administrator access through an EKS access entry rather than relying only on legacy configuration.
+
+## Verified Results
+
+The project successfully demonstrated:
+
+```text
+Terraform apply                     44 resources created
+EKS cluster                         ACTIVE
+Kubernetes version                  1.36
+Managed node group                  ACTIVE
+Worker node                         Ready
+CoreDNS                             Running
+VPC CNI                             Running
+kube-proxy                          Running
+kubectl → EKS                       Working
+Ansible first run                   ok=2 changed=2 failed=0
+Namespace my-app                    Active
+Nginx Deployment                    2/2 Available
+Nginx Pods                          2/2 Running
+nginx-service                       ClusterIP
+Ansible second run                  ok=2 changed=0 failed=0
+Terraform destroy                   44 resources destroyed
+Terraform state after cleanup       Empty
+EKS after cleanup                   ResourceNotFoundException
+Project VPC after cleanup           Not found
+Project EC2 instances after cleanup None running/stopped
+```
+
+The Kubernetes deployment and service were verified successfully. The full runbook also includes an optional `kubectl port-forward` + `curl` application-response test for fresh deployments.
+
+## Key Troubleshooting Lessons
+
+Two issues were discovered before and during the live deployment:
+
+1. **Generated IAM role name exceeded AWS prefix limits.** The original managed-node-group name was too long once the Terraform EKS module appended its own suffix. The node-group name was shortened to `app-nodes` before provisioning.
+2. **Ansible selected the wrong localhost Python interpreter.** `kubernetes.core.k8s` initially ran through a Homebrew Python without the Kubernetes client library. The playbook was fixed with `ansible_python_interpreter: "{{ ansible_playbook_python }}"`, reusing the Python environment that already contained Ansible's required Kubernetes dependencies.
+
+Both fixes were validated before being merged into `develop`.
+
+## Git Workflow
+
+```text
+main
+└── develop
+    ├── feature/terraform-eks
+    ├── feature/ansible-kubernetes
+    ├── fix/terraform-preflight
+    ├── feature/ansible-python-interpreter
+    └── feature/final-documentation
+```
+
+Feature/fix branches are merged into `develop` using `--no-ff`. After final validation and documentation, `develop` is merged into `main` using `--no-ff`.
+
+GitHub is the primary remote and GitLab is maintained as a mirror.
+
+## Deployment
+
+For the complete fresh-machine, start-to-finish procedure — including prerequisites, every configuration file, Terraform validation, AWS checks, provisioning, kubeconfig, Ansible deployment, troubleshooting, verification, and cleanup — see:
+
+**[RUNBOOK.md](RUNBOOK.md)**
+
+## Important Note About Kubernetes Versions
+
+This implementation was verified with Amazon EKS Kubernetes `1.36`. EKS-supported versions change over time. Before recreating the environment in the future, verify that the configured version is still offered in the selected AWS region and update `kubernetes_version` if necessary.
+
+## Attribution
+
+Training reference:
+
+- TechWorld with Nana — DevOps Bootcamp, Module 15: Ansible
+
+Implementation, Terraform configuration, Ansible/Kubernetes configuration, troubleshooting, Git workflow, validation, cost controls, and documentation:
+
+- Gafari Oladele Salaudeen
